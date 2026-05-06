@@ -11,17 +11,15 @@
 
 namespace tala {
 
+template <typename Sink>
 class Poller {
 
 public:
-  using Sink = std::function<void(std::string)>;
-
   Poller( std::string host, 
           std::string port, 
           std::chrono::milliseconds delay, 
           Sink sink
         ) : 
-          ioc(),
           endpoint(std::move(host), std::move(port)), 
           client(endpoint, ioc),
           timer(ioc),
@@ -54,7 +52,7 @@ public:
         next_poll += delay;
 
         try {
-          const auto res = client.get(target);
+          auto res = client.get(target);
 
           if (res.result() != http::status::ok) {
             std::cerr << "HTTP error: " << res.result_int() << "\n";
@@ -105,7 +103,6 @@ private:
   std::chrono::milliseconds delay;
   boost::asio::steady_timer timer;
   Sink sink;
-
 };
 
 }
